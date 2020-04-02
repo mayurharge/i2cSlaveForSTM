@@ -19,17 +19,6 @@ typedef struct
 } relay_tt;
 unsigned long lastReportTry=0;
 relay_tt _relays[NUM_RELAYS];
-
-// int  relayPin[3]={RELAY1,RELAY2,RELAY3};
-// bool relaySet[3]={0,0,0};  // get command from i2c and system it=nterrupts
-// bool relayGet[3]={0,0,0}; // actual update to relay pin 
-// unsigned int relayTimerReg[3]={0,0,0}; // auto turnoff time in seconds
-// unsigned int relayTimerTick[3]={0,0,0};
-// unsigned long relayEnergyReg[3]={0,0,0}; // auto turnoff energy
-// unsigned long sessionStartEnergy[3]={0,0,0};
-// bool isRelayTimerActive[3]={false,false,false};
-// bool isRelayEnergyActive[3]={false,false,false};
-
 void setRelay(uint8_t addr,bool value){
     _relays[addr].relaySet=value;
 }

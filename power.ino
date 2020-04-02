@@ -3,64 +3,9 @@
 #include<SPI.h>
 #include <ATM90E36.h>
 ATM90E36 eic1(SPI_PIN);
-/*
-this thing is here only ofr refrence
-
-#define VOLTAGE_R               0
-#define VOLTAGE_Y               1
-#define VOLTAGE_B               2
-#define CURRENT_R               3
-#define CURRENT_Y               4
-#define CURRENT_B               5
-#define APPARENT_POWER_R        6
-#define ACTIVE_POWER_R          7
-#define REACTIVE_POWER_R        8
-#define APPARENT_POWER_Y        9
-#define ACTIVE_POWER_Y          10
-#define REACTIVE_POWER_Y        11
-#define APPARENT_POWER_B        12
-#define ACTIVE_POWER_B          13
-#define REACTIVE_POWER_B        14
-#define POWER_FACTOR_R          15
-#define POWER_FACTOR_Y          16
-#define POWER_FACTOR_B          17  
-#define TOTAL_APPARENT_POWER    18
-#define TOTAL_ACTIVE_POWER      19
-#define TOTAL_REACTIVE_POWER    20
-#define TOTAL_POWER_FACTOR      21
-//below are the 36 registers for harmonics currently using only 2
-
-
-#define THDN_VOLTAGE_R          22
-#define THDN_CURRENT_R          23
-// #define THD_VOLTAGE_R             2
-// #define THD_CURRENT_R             3          
-// #define VOLTAGE_2_TH_R            4
-// #define CURRENT_2_TH_R            5
-// #define VOLTAGE_3_TH_R            6
-// #define CURRENT_3_TH_R            7
-// #define VOLTAGE_4_TH_R            8
-// #define CURRENT_4_TH_R            9
-// #define VOLTAGE_32_TH_R           10
-// #define CURRENT_32_TH_R           11
-#define THDN_VOLTAGE_Y          24
-#define THDN_CURRENT_Y          25
-// #define THD_VOLTAGE_R             2
-// #define THD_CURRENT_R             3          
-// #define VOLTAGE_2_TH_R            4
-// #define CURRENT_2_TH_R            5
-// #define VOLTAGE_3_TH_R            6
-// #define CURRENT_3_TH_R            7
-// #define VOLTAGE_4_TH_R            8
-// #define CURRENT_4_TH_R            9
-// #define VOLTAGE_32_TH_R           10
-// #define CURRENT_32_TH_R           11
-#define THDN_VOLTAGE_B          26
-#define THDN_CURRENT_B          27
-*/
 typedef struct 
 {
-  float powerParams[28];
+  int powerParams[28];
   unsigned long energyParams[4];
   unsigned long _last_energy_read;
   unsigned int calib[6];
@@ -93,29 +38,30 @@ void powerLoop(){
     
     if(millis()-loopDelay>1000) return;
     loopDelay=millis();
-    _powerPara.powerParams[0]=eic1.GetLineVoltage(0);
-    _powerPara.powerParams[1]=eic1.GetLineVoltage(1);
-    _powerPara.powerParams[2]=eic1.GetLineVoltage(2);
-    _powerPara.powerParams[3]=eic1.GetLineCurrent(0);
-    _powerPara.powerParams[4]=eic1.GetLineCurrent(1);
-    _powerPara.powerParams[5]=eic1.GetLineCurrent(2);
-    _powerPara.powerParams[6]=eic1.GetApparentPower(0);
-    _powerPara.powerParams[7]=eic1.GetActivePower(0);
-    _powerPara.powerParams[8]=eic1.GetReactivePower(0);
-    _powerPara.powerParams[9]=eic1.GetApparentPower(1);
-    _powerPara.powerParams[10]=eic1.GetActivePower(1);
-    _powerPara.powerParams[11]=eic1.GetReactivePower(1);
-    _powerPara.powerParams[12]=eic1.GetApparentPower(2);
-    _powerPara.powerParams[13]=eic1.GetActivePower(2);
-    _powerPara.powerParams[14]=eic1.GetReactivePower(2);
-    _powerPara.powerParams[15]=eic1.GetPowerFactor(0);
-    _powerPara.powerParams[16]=eic1.GetPowerFactor(1);
-    _powerPara.powerParams[17]=eic1.GetPowerFactor(2);
-    _powerPara.powerParams[18]=eic1.GetApparentPower(4);
-    _powerPara.powerParams[19]=eic1.GetActivePower(4);
-    _powerPara.powerParams[20]=eic1.GetReactivePower(4);
-    _powerPara.powerParams[21]=eic1.GetPowerFactor(4);
-    _powerPara.powerParams[22]=eic1.GetVHarm(0);
+    _powerPara.powerParams[0]=eic1.GetLineVoltage(0)*100;
+    _powerPara.powerParams[1]=eic1.GetLineVoltage(1)*100;
+    _powerPara.powerParams[2]=eic1.GetLineVoltage(2)*100;
+    _powerPara.powerParams[3]=eic1.GetLineCurrent(0)*100;
+    _powerPara.powerParams[4]=eic1.GetLineCurrent(1)*100;
+    _powerPara.powerParams[5]=eic1.GetLineCurrent(2)*100;
+    _powerPara.powerParams[6]=eic1.GetApparentPower(0)*100;
+    _powerPara.powerParams[7]=eic1.GetActivePower(0)*100;
+    _powerPara.powerParams[8]=eic1.GetReactivePower(0)*100;
+    _powerPara.powerParams[9]=eic1.GetApparentPower(1)*100;
+    _powerPara.powerParams[10]=eic1.GetActivePower(1)*100;
+    _powerPara.powerParams[11]=eic1.GetReactivePower(1)*100;
+    _powerPara.powerParams[12]=eic1.GetApparentPower(2)*100;
+    _powerPara.powerParams[13]=eic1.GetActivePower(2)*100;
+    _powerPara.powerParams[14]=eic1.GetReactivePower(2)*100;
+    _powerPara.powerParams[15]=eic1.GetPowerFactor(0)*100;
+    _powerPara.powerParams[16]=eic1.GetPowerFactor(1)*100;
+    _powerPara.powerParams[17]=eic1.GetPowerFactor(2)*100;
+    _powerPara.powerParams[18]=eic1.GetApparentPower(4)*100;
+    _powerPara.powerParams[19]=eic1.GetActivePower(4)*100;
+    _powerPara.powerParams[20]=eic1.GetReactivePower(4)*100;
+    _powerPara.powerParams[21]=eic1.GetPowerFactor(4)*100;
+    // garmonics are already mul by 100
+    _powerPara.powerParams[22]=eic1.GetVHarm(0); 
     _powerPara.powerParams[23]=eic1.GetCHarm(0);
     _powerPara.powerParams[24]=eic1.GetVHarm(1);
     _powerPara.powerParams[25]=eic1.GetCHarm(1);
@@ -125,11 +71,6 @@ void powerLoop(){
         _powerPara._last_energy_read=millis();
         updateEnergy();
     }
-
-    // _powerPara.energyParams[0]=eic1.GetImportEnergy(0);
-    // _powerPara.energyParams[1]=eic1.GetImportEnergy(1);
-    // _powerPara.energyParams[2]=eic1.GetImportEnergy(2);
-    // _powerPara.energyParams[3]=eic1.GetImportEnergy(3);
 }
 void updateEnergy() {
     for(int i=0;i<4;i++){
@@ -140,7 +81,6 @@ void updateEnergy() {
 void resetEnergy(uint8_t i) {  
     _powerPara.energyParams[i] = 0; 
 }
-
 unsigned long getEnergyWSec(uint8_t addr){
     return _powerPara.relayEnergyTick[addr];
 }

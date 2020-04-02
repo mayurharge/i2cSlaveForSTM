@@ -1,5 +1,5 @@
 #include <Wire.h>
-// i dont think struct is necessary here since different variables are serving different purpose
+
 byte commandReg[12];
 byte _sendBytes[12];
 bool processesFlag=false;
@@ -12,7 +12,6 @@ void i2csetup()
   Wire.onReceive(receiveEvent); // receive  event
   Wire.onRequest(requestEvent);
 }
-
 void i2cloop()
 {
   if(processesFlag){
@@ -21,7 +20,6 @@ void i2cloop()
   }
 }
 bool processesi2cCommand(){
-    // add  different command for  alive beat as per i2c scan
     int checksum = 0x15; // will add checksum logic later
     if(checksum==0x15){
         if((commandReg[0]==0x4B)&&(commandReg[1]==0x55)){
@@ -36,7 +34,6 @@ bool processesi2cCommand(){
     }
     return false;
 }
-
 void readRegisters(uint8_t regType, uint8_t regAddr){
     _sendBytes[0]= 0x4B;
     _sendBytes[1]= 0X55;
@@ -83,9 +80,7 @@ void readRegisters(uint8_t regType, uint8_t regAddr){
         }
         resetEnergy(regAddr);
         break;
-
     }
-    
     int checksum = 0x15;
     _sendBytes[11]=checksum;
     readyToSend=true;
@@ -122,7 +117,6 @@ void receiveEvent(int howMany){
         commandReg[i]=Wire.read();
     }
 }
-
 void requestEvent(){
     if(aliveBeatReq){
         aliveBeatReq=false;
@@ -140,7 +134,6 @@ void requestEvent(){
 byte readCommandRegister(uint8_t addr){  // this function no longer required
     return commandReg[addr];
 }
-
 unsigned long geti2cValue(){
     unsigned long _value=0;
     for (int i=0;i<4;i++){
