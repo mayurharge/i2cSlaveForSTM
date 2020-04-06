@@ -5,7 +5,7 @@ bool processesFlag=false;
 bool readyToSend=false;
 bool aliveBeatReq=false;
 void i2csetup(){
-  int i2cAddr = eepromRead(1,SALVE_ADDR);  // will get it from eeprom in finalised version
+  int i2cAddr = eepromRead(1,SALVE_ADDR,4);  // will get it from eeprom in finalised version
   Wire.begin(i2cAddr);                // join i2c bus with address #4
   Wire.onReceive(receiveEvent); // receive  event
   Wire.onRequest(requestEvent);

@@ -114,7 +114,6 @@ void eic_calibrate( unsigned long Ugaina, unsigned int Ugainb,
   // eics[icID]->calibrateNew(Ugaina, Ugainb, Ugainc, Igaina *
   // USE_SP_MUL_FACTOR, Igainb * USE_SP_MUL_FACTOR, Igainc * USE_SP_MUL_FACTOR,
   // Igainn, 0x0087);
-  DBG("Calibrating IC Again: ");
   eic1.calibrateNew(Ugaina, Ugainb, Ugainc, Igaina ,
                            Igainb ,
                            Igainc , Igainn, 0x5, 0x5, 0x5,
@@ -123,7 +122,7 @@ void eic_calibrate( unsigned long Ugaina, unsigned int Ugainb,
   // Igainb * USE_SP_MUL_FACTOR, Igainc * USE_SP_MUL_FACTOR, 0x0087);
 }
 
-bool calibErrCheck(uint8_t i) {
+bool calibErrCheck() {
   bool has_error =
       eic1.calibrationError() || eic1.checkOperationModeError();
   if (has_error) {
@@ -152,6 +151,4 @@ void calibrate(bool do_only_on_error) {
       delay(1000);  // NOTE: This delay is neccesary, i have seen in few cases
                     // that right after calibrating, sometimes the IC is not
                     // giving right results.
-    }
-  }
 }
