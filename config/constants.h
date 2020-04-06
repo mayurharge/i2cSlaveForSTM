@@ -115,3 +115,12 @@
 
 
 #define ONE_SECOND 1000
+#define SETTINGS_AVAILABLE  0
+#define SALVE_ADDR          1
+#define V_GAIN_A            2
+#define V_GAIN_B            5
+#define V_GAIN_C            8
+#define I_GAIN_A            11
+#define I_GAIN_B            14
+#define I_GAIN_C            17
+#define I_GAIN_N            20

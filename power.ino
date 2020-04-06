@@ -1,5 +1,9 @@
 #define SPI_PIN PA4
 #define _energy_read_interval 30000
+#define CALIB_CHECK_LIMIT   5000
+unsigned long last_checked_calib = 0;
+#define DEFAULT_V_GAIN      0x678C
+#define DEFAULT_IGAIN       0x3FE6
 #include<SPI.h>
 #include <ATM90E36.h>
 ATM90E36 eic1(SPI_PIN);
@@ -8,7 +12,7 @@ typedef struct
   int powerParams[28];
   unsigned long energyParams[4];
   unsigned long _last_energy_read;
-  unsigned int calib[6];
+  unsigned int calib[7];
   unsigned long relayEnergyTick[3];
 }Power;
 Power _powerPara;
@@ -22,20 +26,27 @@ uint8_t getPowerStatus(uint8_t _byte,uint8_t addr){
 uint8_t getCalib(uint8_t _byte,uint8_t addr){
     return getBytes(_byte,_powerPara.calib[addr]);
 }
-void setRelayCalib(uint8_t addr, unsigned int value ){
+void setRelayCalib(uint8_t addr, unsigned int value){
     _powerPara.calib[addr]=value;
+    uint8_t eepromAddr = (addr+2)+addr*3;
+    eepromWrite(4,eepromAddr,value);
 }
 void powerSetup(){
-    //  will write calibration code later
-    eic1.begin();
+    if(eepromDatataPresent()){
+    _powerPara.calib[0]=eepromRead(2,V_GAIN_A,DEFAULT_V_GAIN);
+    _powerPara.calib[1]=eepromRead(2,V_GAIN_B,DEFAULT_V_GAIN);
+    _powerPara.calib[2]=eepromRead(2,V_GAIN_C,DEFAULT_V_GAIN);
+    _powerPara.calib[3]=eepromRead(2,I_GAIN_A,DEFAULT_IGAIN);
+    _powerPara.calib[4]=eepromRead(2,I_GAIN_B,DEFAULT_IGAIN);
+    _powerPara.calib[5]=eepromRead(2,I_GAIN_C,DEFAULT_IGAIN);
+    _powerPara.calib[6]=eepromRead(2,I_GAIN_N,DEFAULT_IGAIN);
+    }
+    // actually there is no need of different calibration values since max current will never exceed   65A in this hardware
+    // for 100A calibration we acn use mul factor but calibration values will reman same.
+    eic1.begin(); 
 }
 void powerLoop(){
-    // not using for loop pattern because parameter addressing is not in old sequence 
-    // addressing is defined as above comment to ease the communication between master and slave
-    //  check master code for more details
-    // altough voltages, currents, powrfactors can be implemented in for loop
-    //  else I would think some logic to implement this thing in for loop later; and anayways implementing multiple for loops might take more time to processes
-    
+    calibrateLoop();
     if(millis()-loopDelay>1000) return;
     loopDelay=millis();
     _powerPara.powerParams[0]=eic1.GetLineVoltage(0)*100;
@@ -89,4 +100,58 @@ void resetEnergyWSec(uint8_t addr){
     unsigned int a = eic1.GetImportEnergy(addr); //resetting to remove values from prev session
 //    resetting avove will not reset total energy as its stored at addr 3
     _powerPara.relayEnergyTick[addr]=0;
+}
+//============================================================================================
+//  calib functions
+// ============================================================================================
+void eic_calibrate( unsigned long Ugaina, unsigned int Ugainb,
+                   unsigned int Ugainc, unsigned int Igaina,
+                   unsigned int Igainb, unsigned int Igainc,
+                   unsigned int Igainn) {
+  // eics[icID]->calibrateNew(Ugaina, Ugainb, Ugainc, Igaina *
+  // USE_SP_MUL_FACTOR, Igainb * USE_SP_MUL_FACTOR, Igainc * USE_SP_MUL_FACTOR,
+  // Igainn, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x2, 0x0087);
+  // eics[icID]->calibrateNew(Ugaina, Ugainb, Ugainc, Igaina *
+  // USE_SP_MUL_FACTOR, Igainb * USE_SP_MUL_FACTOR, Igainc * USE_SP_MUL_FACTOR,
+  // Igainn, 0x0087);
+  DBG("Calibrating IC Again: ");
+  eic1.calibrateNew(Ugaina, Ugainb, Ugainc, Igaina ,
+                           Igainb ,
+                           Igainc , Igainn, 0x5, 0x5, 0x5,
+                           0x6, 0x6, 0x6, 0x2, 0x0087);
+  // eics[icID]->calibrate(Ugaina, Ugainb, Ugainc, Igaina * USE_SP_MUL_FACTOR,
+  // Igainb * USE_SP_MUL_FACTOR, Igainc * USE_SP_MUL_FACTOR, 0x0087);
+}
+
+bool calibErrCheck(uint8_t i) {
+  bool has_error =
+      eic1.calibrationError() || eic1.checkOperationModeError();
+  if (has_error) {
+    eic1.reset();
+    delay(1000);
+  }
+  return has_error;
+}
+void calibrateLoop() {
+  if (millis() - last_checked_calib >=
+      CALIB_CHECK_LIMIT)  // CHECKS EVERY 1 Minute FOR NOW
+  {
+    calibrate(true);  // CALIBRATES ONLY ON ERROR
+    last_checked_calib = millis();
+  }
+}
+void calibrate() { calibrate(false); }
+void calibrate(bool do_only_on_error) {
+  
+    if ((do_only_on_error && calibErrCheck()) || !do_only_on_error) {
+    // being retrieved in setup
+        eic_calibrate(_powerPara.calib[0], _powerPara.calib[1], _powerPara.calib[2],
+                      _powerPara.calib[3], _powerPara.calib[4], _powerPara.calib[5],
+                      _powerPara.calib[6]);
+      } 
+      delay(1000);  // NOTE: This delay is neccesary, i have seen in few cases
+                    // that right after calibrating, sometimes the IC is not
+                    // giving right results.
+    }
+  }
 }

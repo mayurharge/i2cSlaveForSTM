@@ -1,19 +1,16 @@
 #include <Wire.h>
-
 byte commandReg[12];
 byte _sendBytes[12];
 bool processesFlag=false;
 bool readyToSend=false;
 bool aliveBeatReq=false;
-void i2csetup()
-{
-  int i2cAddr = 4;  // will get it from eeprom in finalised version
+void i2csetup(){
+  int i2cAddr = eepromRead(1,SALVE_ADDR);  // will get it from eeprom in finalised version
   Wire.begin(i2cAddr);                // join i2c bus with address #4
   Wire.onReceive(receiveEvent); // receive  event
   Wire.onRequest(requestEvent);
 }
-void i2cloop()
-{
+void i2cloop(){
   if(processesFlag){
       processesi2cCommand();
       processesFlag=false;
@@ -100,7 +97,6 @@ void setRegisters(uint8_t regType, uint8_t regAddr){
             setRelayCalib(regAddr,geti2cValue());
         break;
     }
-
 }
 void receiveEvent(int howMany){
     if(howMany==1){
